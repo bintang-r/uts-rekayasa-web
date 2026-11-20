@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kuliner Kota Makassar — Direktori &amp; Peta Kuliner Interaktif | Muhammad Bintang (20232205029)</title>
+  <meta name="description" content="Portal Wisata Kuliner Anging Mammiri — Direktori dan Peta Interaktif Kuliner Autentik Kota Makassar. Tugas T.701 Desain Website Kuliner oleh Muhammad Bintang (20232205029)." />
+
+  <!-- Google Fonts: Playfair Display & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Suppress Tailwind Play CDN console warning for local/academic standalone deployment -->
+  <script>
+    (function () {
+      var origWarn = console.warn;
+      console.warn = function () {
+        if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].indexOf('cdn.tailwindcss.com should not be used in production') !== -1) {
+          return;
+        }
+        return origWarn.apply(console, arguments);
+      };
+    })();
+  </script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            makassarRed: '#B91C1C',
+            makassarRedHover: '#991B1B',
+            makassarRedLight: '#FEF2F2',
+            makassarRedBorder: '#FECACA',
+            losariOrange: '#EA580C',
+            losariOrangeHover: '#C2410C',
+            losariOrangeLight: '#FFF7ED',
+            losariOrangeBorder: '#FED7AA',
+            halalGreen: '#15803D',
+            halalGreenLight: '#F0FDF4',
+            halalGreenBorder: '#BBF7D0',
+            slateInk: '#0F172A',
+            surfaceBg: '#F8FAFC',
+            wireframeGray: '#E2E8F0'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['"Playfair Display"', 'Georgia', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Remix Icon v4.5.0 CDN (Modern Vector UI Icons) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" />
+
+  <!-- Leaflet.js CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body class="bg-surfaceBg text-slateInk min-h-screen flex flex-col selection:bg-makassarRed selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- TOP UTILITY / DESIGN SYSTEM BAR                                       -->
+  <!-- ===================================================================== -->
+  <div class="bg-slateInk text-slate-200 text-xs border-b border-slate-800 px-4 sm:px-8 lg:px-16 py-2">
+    <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <span class="bg-makassarRed text-white font-bold px-2.5 py-0.5 rounded-full text-[11px]">T.701 — DESAIN WEBSITE KULINER</span>
+        <span class="hidden md:inline text-slate-300 font-medium">Muhammad Bintang (20232205029) • Wireframe Responsif &amp; Implementasi Web Interaktif</span>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-3 ml-auto">
+        <button id="btn-toggle-design-system" type="button" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white font-semibold px-3 py-1 rounded-md border border-slate-700 transition">
+          <i class="ri-palette-line text-sm text-makassarRedBorder"></i>
+          <span>Komponen &amp; Kode Warna</span>
+        </button>
+        <button id="btn-toggle-wireframe-mode" type="button" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold px-3 py-1 rounded-md border border-slate-700 transition" title="Ubah tampilan antara Mode Foto Asli dan Mode Wireframe Figma">
+          <span id="wireframe-mode-label" class="inline-flex items-center gap-1.5">
+            <i class="ri-image-2-line text-sm"></i>
+            <span>Mode: Foto Kuliner</span>
+          </span>
+        </button>
+        <button id="btn-open-favorites" type="button" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-rose-300 font-semibold px-2.5 py-1 rounded-md border border-slate-700 transition">
+          <i class="ri-heart-3-fill text-sm"></i>
+          <span id="fav-count-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- RESPONSIVE STICKY NAVBAR (DESKTOP 1440PX & MOBILE 390PX BURGER MENU)  -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b-[1.5px] border-slate-200 shadow-sm">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 h-16 lg:h-20 flex items-center justify-between gap-4">
+
+      <!-- Left: Brand Identity / Mobile Back Context -->
+      <div class="flex items-center gap-3">
+        <!-- Mobile Back Button (Shown on Detail Kuliner M03) -->
+        <button id="mobile-back-direktori" type="button" class="hidden items-center gap-1.5 text-makassarRed font-bold text-sm lg:hidden pr-1">
+          <i class="ri-arrow-left-line text-base"></i>
+          <span>Direktori</span>
+        </button>
+
+        <a href="#beranda" data-nav="beranda" class="nav-trigger flex items-center gap-3 group">
+          <div id="brand-km-icon" class="w-9 h-9 lg:w-10 lg:h-10 rounded-[10px] bg-makassarRed text-white font-bold text-sm lg:text-base flex items-center justify-center shadow-sm group-hover:bg-makassarRedHover transition">
+            KM
+          </div>
+          <div>
+            <div id="navbar-dynamic-title" class="font-serif-display font-bold text-base sm:text-lg text-slateInk leading-tight">
+              Kuliner Makassar
+            </div>
+            <div class="hidden sm:block text-[11px] text-slate-500">
+              Portal Wisata Kuliner Anging Mammiri
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Center: Desktop 6 Menu Navigation Links -->
+      <nav class="hidden lg:flex items-center gap-2 xl:gap-5 text-sm font-medium text-slate-600" aria-label="Navigasi Utama">
+        <button type="button" data-nav="beranda" class="nav-trigger nav-link-item px-3.5 py-2 rounded-lg transition font-bold text-makassarRed bg-makassarRedLight border border-makassarRedBorder">
+          Beranda
+        </button>
+        <button type="button" data-nav="kategori" class="nav-trigger nav-link-item px-3.5 py-2 rounded-lg transition hover:text-makassarRed hover:bg-slate-50 border border-transparent">
+          Kategori
+        </button>
+        <button type="button" data-nav="detail" class="nav-trigger nav-link-item px-3.5 py-2 rounded-lg transition hover:text-makassarRed hover:bg-slate-50 border border-transparent">
+          Detail Kuliner
+        </button>
+        <button type="button" data-nav="peta" class="nav-trigger nav-link-item px-3.5 py-2 rounded-lg transition hover:text-makassarRed hover:bg-slate-50 border border-transparent">
+          Peta Kuliner
+        </button>
+        <button type="button" data-nav="artikel" class="nav-trigger nav-link-item px-3.5 py-2 rounded-lg transition hover:text-makassarRed hover:bg-slate-50 border border-transparent">
+          Artikel
+        </button>
+        <button type="button" data-nav="tentang" class="nav-trigger nav-link-item px-3.5 py-2 rounded-lg transition hover:text-makassarRed hover:bg-slate-50 border border-transparent">
+          Tentang
+        </button>
+      </nav>
+
+      <!-- Right: Desktop CTA & Mobile Action Icons (Search + Burger Menu) -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Desktop Primary CTA -->
+        <button type="button" data-nav="tentang" data-focus-form="true" class="nav-trigger btn-animated hidden lg:inline-flex items-center gap-2 bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-sm px-5 py-2.5 rounded-lg shadow-sm transition">
+          <i class="ri-add-circle-line text-base"></i>
+          <span>Rekomendasikan Kuliner</span>
+        </button>
+
+        <!-- Mobile Search Button (Comp / Search Icon) -->
+        <button id="btn-mobile-search-toggle" type="button" class="lg:hidden w-10 h-10 rounded-lg bg-surfaceBg border-[1.5px] border-slate-300 flex items-center justify-center text-slateInk hover:border-makassarRed hover:text-makassarRed transition" aria-label="Pencarian Cepat">
+          <i class="ri-search-2-line text-lg"></i>
+        </button>
+
+        <!-- Mobile Burger Menu Button (Comp / Burger Icon) -->
+        <button id="btn-open-burger-drawer" type="button" class="lg:hidden w-10 h-10 rounded-lg bg-makassarRedLight border-[1.5px] border-makassarRedBorder flex items-center justify-center text-makassarRed hover:bg-red-100 transition" aria-label="Buka Menu Navigasi">
+          <i class="ri-menu-3-line text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Mobile Instant Search Bar -->
+    <div id="mobile-QuickSearch-bar" class="hidden lg:hidden bg-white border-t border-slate-200 px-4 py-3">
+      <form id="form-mobile-navbar-search" class="flex items-center gap-2 bg-surfaceBg border-[1.5px] border-slate-300 rounded-xl px-3 py-2 focus-within:border-makassarRed">
+        <i class="ri-search-2-line text-slate-400 text-base shrink-0"></i>
+        <input id="input-mobile-navbar-search" type="text" placeholder="Cari Coto Makassar, Pallubasa, Konro, Pisang Epe..." class="w-full bg-transparent text-xs sm:text-sm text-slateInk placeholder-slate-400 focus:outline-none" />
+        <button type="submit" class="bg-makassarRedLight text-makassarRed border border-makassarRedBorder font-bold text-xs px-3 py-1 rounded-md shrink-0">
+          Cari
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- M-DRAWER: MOBILE BURGER MENU OVERLAY (1:1 FIGMA M-DRAWER 390PX)       -->
+  <!-- ===================================================================== -->
+  <div id="mobile-burger-drawer-backdrop" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-xs transition-opacity">
+    <aside id="mobile-burger-drawer-panel" class="ml-auto w-full max-w-[390px] h-full bg-white border-l-2 border-makassarRed flex flex-col justify-between shadow-2xl overflow-y-auto">
+      <!-- Drawer Header -->
+      <div>
+        <div class="h-16 bg-makassarRedLight border-b-[1.5px] border-makassarRedBorder px-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-[10px] bg-makassarRed text-white font-bold text-sm flex items-center justify-center">
+              KM
+            </div>
+            <div>
+              <div class="font-serif-display font-bold text-[15px] text-slateInk leading-tight">Menu Navigasi Utama</div>
+              <div class="text-[11px] font-semibold text-makassarRed">Kuliner Kota Makassar</div>
+            </div>
+          </div>
+          <!-- Comp / Close Drawer -->
+          <button id="btn-close-burger-drawer" type="button" class="w-10 h-10 rounded-lg bg-white border-[1.5px] border-makassarRedBorder flex items-center justify-center text-makassarRed hover:bg-red-50 transition" aria-label="Tutup Menu Navigasi">
+            <i class="ri-close-line text-xl"></i>
+          </button>
+        </div>
+
+        <!-- 6 Menu Items List inside Burger Drawer -->
+        <div class="p-4 flex flex-col gap-2.5">
+          <div class="text-[11px] font-bold text-slate-500 tracking-wider uppercase mb-1">
+            PILIH HALAMAN (6 MENU UTAMA)
+          </div>
+
+          <button type="button" data-nav="beranda" class="drawer-nav-item nav-trigger w-full flex items-center justify-between px-3.5 py-3 rounded-[10px] text-sm font-bold border-[1.5px] border-makassarRed bg-makassarRedLight text-makassarRed transition">
+            <span>01. Beranda Eksplorasi</span>
+            <span class="drawer-status-badge text-xs font-bold inline-flex items-center gap-1"><i class="ri-record-circle-fill text-xs"></i> Aktif</span>
+          </button>
+
+          <button type="button" data-nav="kategori" class="drawer-nav-item nav-trigger w-full flex items-center justify-between px-3.5 py-3 rounded-[10px] text-sm font-semibold border-[1.5px] border-slate-200 bg-surfaceBg text-slateInk hover:border-makassarRed transition">
+            <span>02. Kategori &amp; Direktori</span>
+            <span class="drawer-status-badge text-xs text-slate-500 inline-flex items-center gap-1">48 Kuliner <i class="ri-arrow-right-line"></i></span>
+          </button>
+
+          <button type="button" data-nav="detail" class="drawer-nav-item nav-trigger w-full flex items-center justify-between px-3.5 py-3 rounded-[10px] text-sm font-semibold border-[1.5px] border-slate-200 bg-surfaceBg text-slateInk hover:border-makassarRed transition">
+            <span>03. Detail Kuliner (Coto)</span>
+            <span class="drawer-status-badge text-xs font-bold text-losariOrange inline-flex items-center gap-1"><i class="ri-star-fill"></i> 4.9 <i class="ri-arrow-right-line"></i></span>
+          </button>
+
+          <button type="button" data-nav="peta" class="drawer-nav-item nav-trigger w-full flex items-center justify-between px-3.5 py-3 rounded-[10px] text-sm font-semibold border-[1.5px] border-slate-200 bg-surfaceBg text-slateInk hover:border-makassarRed transition">
+            <span>04. Peta Kuliner Interaktif</span>
+            <span class="drawer-status-badge text-xs text-slate-500 inline-flex items-center gap-1">15 Kec. <i class="ri-arrow-right-line"></i></span>
+          </button>
+
+          <button type="button" data-nav="artikel" class="drawer-nav-item nav-trigger w-full flex items-center justify-between px-3.5 py-3 rounded-[10px] text-sm font-semibold border-[1.5px] border-slate-200 bg-surfaceBg text-slateInk hover:border-makassarRed transition">
+            <span>05. Artikel &amp; Cerita Kuliner</span>
+            <span class="drawer-status-badge text-xs text-slate-500 inline-flex items-center gap-1">18 Kisah <i class="ri-arrow-right-line"></i></span>
+          </button>
+
+          <button type="button" data-nav="tentang" class="drawer-nav-item nav-trigger w-full flex items-center justify-between px-3.5 py-3 rounded-[10px] text-sm font-semibold border-[1.5px] border-slate-200 bg-surfaceBg text-slateInk hover:border-makassarRed transition">
+            <span>06. Tentang &amp; Rekomendasi</span>
+            <span class="drawer-status-badge text-xs text-slate-500 inline-flex items-center gap-1">Form <i class="ri-arrow-right-line"></i></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Filter Kecamatan & CTA inside Drawer -->
+      <div class="p-4 bg-surfaceBg border-t-[1.5px] border-slate-200 flex flex-col gap-3">
+        <div class="text-[11px] font-bold text-slate-500 tracking-wider uppercase">
+          AKSES CEPAT KECAMATAN
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" data-quick-kecamatan="ujung-pandang" class="btn-quick-kecamatan bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-2.5 py-1 rounded-md text-xs font-bold hover:bg-red-100 transition">
+            Pantai Losari
+          </button>
+          <button type="button" data-quick-kecamatan="wajo" class="btn-quick-kecamatan bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-2.5 py-1 rounded-md text-xs font-bold hover:bg-orange-100 transition">
+            Kec. Wajo
+          </button>
+          <button type="button" data-quick-kecamatan="panakkukang" class="btn-quick-kecamatan bg-halalGreenLight text-halalGreen border border-halalGreenBorder px-2.5 py-1 rounded-md text-xs font-bold hover:bg-green-100 transition">
+            Panakkukang
+          </button>
+        </div>
+        <button type="button" data-nav="tentang" data-focus-form="true" class="nav-trigger w-full inline-flex items-center justify-center gap-1.5 bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-sm py-3 rounded-lg shadow-sm transition">
+          <i class="ri-add-circle-line text-base"></i>
+          <span>Rekomendasikan Kuliner Baru</span>
+        </button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- COLLAPSIBLE SECTION: DESIGN SYSTEM & KOMPONEN (FIGMA BOARD 01)        -->
+  <!-- ===================================================================== -->
+  <section id="section-design-system" class="hidden bg-white border-b-2 border-makassarRed py-8 px-4 sm:px-8 lg:px-16">
+    <div class="max-w-[1440px] mx-auto flex flex-col gap-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4">
+        <div>
+          <span class="text-xs font-bold text-makassarRed tracking-wider uppercase">BAGIAN 01 — DESIGN SYSTEM &amp; KOMPONEN REUSABLE</span>
+          <h2 class="font-serif-display text-2xl font-bold text-slateInk mt-1 flex items-center gap-2">
+            <i class="ri-layout-masonry-fill text-makassarRed"></i>
+            <span>Master Components, Palet Wireframe Makassar, Tipografi &amp; Elemen UI</span>
+          </h2>
+        </div>
+        <button id="btn-close-design-system" type="button" class="inline-flex items-center gap-1.5 text-xs font-bold text-makassarRed bg-makassarRedLight border border-makassarRedBorder px-3.5 py-2 rounded-lg hover:bg-red-100 transition">
+          <i class="ri-close-line text-sm"></i>
+          <span>Tutup Panel Komponen</span>
+        </button>
+      </div>
+
+      <!-- Row 1: Colors & Typography -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 01. Color Palette -->
+        <div class="bg-surfaceBg border-[1.5px] border-slate-200 rounded-xl p-5">
+          <div class="text-xs font-bold text-makassarRed tracking-wide mb-3">01. PALET WARNA WIREFRAME &amp; AKSEN MAKASSAR</div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="bg-white border border-slate-300 rounded-lg p-3">
+              <div class="h-10 bg-makassarRed rounded-md mb-2"></div>
+              <div class="text-xs font-bold text-slateInk">Makassar Red</div>
+              <div class="text-[11px] text-slate-500">#B91C1C • Primary CTA</div>
+            </div>
+            <div class="bg-white border border-slate-300 rounded-lg p-3">
+              <div class="h-10 bg-losariOrange rounded-md mb-2"></div>
+              <div class="text-xs font-bold text-slateInk">Losari Orange</div>
+              <div class="text-[11px] text-slate-500">#EA580C • Accent / Rating</div>
+            </div>
+            <div class="bg-white border border-slate-300 rounded-lg p-3">
+              <div class="h-10 bg-slateInk rounded-md mb-2"></div>
+              <div class="text-xs font-bold text-slateInk">Slate Ink 900</div>
+              <div class="text-[11px] text-slate-500">#0F172A • Heading Text</div>
+            </div>
+            <div class="bg-white border border-slate-300 rounded-lg p-3">
+              <div class="h-10 bg-wireframeGray border border-dashed border-slate-500 rounded-md mb-2"></div>
+              <div class="text-xs font-bold text-slateInk">Wireframe Surface</div>
+              <div class="text-[11px] text-slate-500">#F8FAFC / #E2E8F0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 02. Typography -->
+        <div class="bg-surfaceBg border-[1.5px] border-slate-200 rounded-xl p-5 flex flex-col justify-between">
+          <div class="text-xs font-bold text-makassarRed tracking-wide mb-3">02. SISTEM TIPOGRAFI (PLAYFAIR DISPLAY &amp; INTER)</div>
+          <div class="flex flex-col gap-2.5">
+            <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-200 pb-2">
+              <span class="font-serif-display text-xl sm:text-2xl font-bold text-slateInk">Display Hero — Jelajahi Cita Rasa Makassar</span>
+              <span class="text-xs text-slate-500">Playfair Display • 44px / Bold</span>
+            </div>
+            <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-200 pb-2">
+              <span class="font-serif-display text-lg font-bold text-slateInk">Section Heading — Kuliner Legendaris Pilihan</span>
+              <span class="text-xs text-slate-500">Playfair Display • 28px / Bold</span>
+            </div>
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <span class="text-sm text-slate-700">Body Copy &amp; Navigasi UI — Sajian kuah rempah Nusantara khas Sulawesi Selatan.</span>
+              <span class="text-xs text-slate-500">Inter • 14px–16px / Regular &amp; SemiBold</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Buttons, Form Validation, Card Preview -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 03. Buttons & Chips -->
+        <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-5 flex flex-col gap-3">
+          <div class="text-xs font-bold text-makassarRed">03. KOMPONEN TOMBOL, BURGER MENU &amp; FILTER CHIP</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-makassarRed text-white text-xs font-semibold px-3.5 py-2 rounded-lg inline-flex items-center gap-1.5"><i class="ri-search-2-line"></i> Cari Kuliner</span>
+            <span class="bg-losariOrange text-white text-xs font-semibold px-3.5 py-2 rounded-lg inline-flex items-center gap-1.5"><i class="ri-map-pin-2-fill"></i> Buka Peta Interaktif</span>
+            <span class="bg-white border border-slate-300 text-slateInk text-xs font-semibold px-3.5 py-2 rounded-lg inline-flex items-center gap-1">Lihat Detail <i class="ri-arrow-right-line"></i></span>
+            <span class="bg-makassarRedLight border border-makassarRedBorder text-makassarRed text-xs font-semibold px-3 py-2 rounded-lg inline-flex items-center gap-1"><i class="ri-add-line"></i> Rekomendasikan</span>
+          </div>
+          <div class="text-xs font-semibold text-slate-500 mt-1">Komponen Filter Chips &amp; Status Badge:</div>
+          <div class="flex flex-wrap gap-2">
+            <span class="bg-makassarRed text-white text-xs font-semibold px-3 py-1 rounded-full">Semua Kuliner (48)</span>
+            <span class="bg-white border border-slate-300 text-slate-700 text-xs font-medium px-3 py-1 rounded-full">Hidangan Berkuah</span>
+            <span class="bg-makassarRedLight border border-makassarRedBorder text-makassarRed text-[11px] font-bold px-2.5 py-1 rounded-md inline-flex items-center gap-1"><i class="ri-star-fill"></i> 4.9 Legendaris</span>
+            <span class="bg-halalGreenLight border border-halalGreenBorder text-halalGreen text-[11px] font-bold px-2.5 py-1 rounded-md inline-flex items-center gap-1"><i class="ri-shield-check-fill"></i> Halal Terverifikasi</span>
+          </div>
+        </div>
+
+        <!-- 04. Form Validation States -->
+        <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-5 flex flex-col gap-3">
+          <div class="text-xs font-bold text-makassarRed">04. KOMPONEN FORMULIR &amp; VALIDASI INLINE</div>
+          <div>
+            <div class="text-[11px] font-semibold text-halalGreen mb-1">Comp / Input / Valid State — Nama Hidangan</div>
+            <div class="flex items-center justify-between bg-halalGreenLight border-[1.5px] border-halalGreen rounded-lg px-3 py-2 text-xs">
+              <span class="font-semibold text-slateInk">Coto Makassar Nusantara</span>
+              <span class="font-bold text-halalGreen inline-flex items-center gap-1"><i class="ri-checkbox-circle-fill"></i> Tersedia</span>
+            </div>
+          </div>
+          <div>
+            <div class="text-[11px] font-semibold text-makassarRed mb-1">Comp / Input / Error State — Alamat Lokasi</div>
+            <div class="flex items-center justify-between bg-makassarRedLight border-[1.5px] border-makassarRed rounded-lg px-3 py-2 text-xs text-makassarRed">
+              <span>Jl. Nusantara (Nomor belum diisi)</span>
+              <span class="font-bold inline-flex items-center gap-1"><i class="ri-error-warning-fill"></i> Wajib lengkap</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 05. Master Card Info -->
+        <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-5 flex flex-col justify-between">
+          <div class="text-xs font-bold text-makassarRed">05. REFERENSI DESAIN FIGMA (FOLDER /reference)</div>
+          <p class="text-xs text-slate-600 leading-relaxed">
+            Seluruh 14 gambar referensi desain Figma Anda tersimpan di direktori <code class="bg-slate-100 px-1.5 py-0.5 rounded text-makassarRed font-semibold">reference/</code> dan telah diimplementasikan 1:1 ke dalam halaman responsif ini beserta fitur pencarian jQuery, data JSON, dan peta interaktif Leaflet.js.
+          </p>
+          <div class="flex items-center justify-between border-t border-slate-200 pt-3 text-xs">
+            <span class="font-bold text-slateInk">14 Artboard Referensi</span>
+            <span class="text-halalGreen font-bold inline-flex items-center gap-1"><i class="ri-checkbox-circle-fill"></i> 100% Terimplementasi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN APPLICATION CONTENT (6 RESPONSIVE MENU VIEWS)                    -->
+  <!-- ===================================================================== -->
+  <main class="flex-1">
+
+    <!-- =================================================================== -->
+    <!-- MENU 01: BERANDA EKSPLORASI (DESKTOP 01 & MOBILE M01)               -->
+    <!-- =================================================================== -->
+    <section id="section-beranda" class="page-section">
+      <!-- Hero Section -->
+      <div class="bg-white border-b-[1.5px] border-slate-200">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-10 lg:py-14 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+
+          <!-- Left Column: Copy, Search & Metrics -->
+          <div class="lg:col-span-7 flex flex-col gap-4 sm:gap-5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-3 py-1 rounded-md text-[11px] font-bold tracking-wide inline-flex items-center gap-1.5">
+                <i class="ri-compass-3-fill"></i>
+                <span>EKSPLORASI KULINER MAKASSAR</span>
+              </span>
+              <span class="hidden sm:inline-flex items-center gap-1 bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-3 py-1 rounded-md text-[11px] font-bold">
+                <i class="ri-star-fill"></i>
+                <span>120+ Destinasi Kuliner Autentik</span>
+              </span>
+            </div>
+
+            <h1 class="relative font-serif-display text-2xl sm:text-4xl lg:text-[44px] font-bold text-slateInk leading-[1.2] lg:leading-[1.18]">
+              <!-- Invisible sizer to prevent layout shift while typing -->
+              <span class="invisible select-none pointer-events-none block" aria-hidden="true">
+                Jelajahi Cita Rasa Autentik &amp; Warisan Kuliner Kota Makassar
+              </span>
+              <!-- Live Typewriter Layer -->
+              <span class="absolute inset-0 block" aria-label="Jelajahi Cita Rasa Autentik dan Warisan Kuliner Kota Makassar">
+                <span id="hero-typewriter-prefix"></span><span id="hero-typewriter-dynamic" class="typewriter-highlight"></span><span id="hero-typewriter-cursor" class="typewriter-cursor" aria-hidden="true"></span>
+              </span>
+            </h1>
+
+            <p class="relative text-sm sm:text-base text-slate-600 leading-relaxed">
+              <span class="invisible select-none pointer-events-none block" aria-hidden="true">
+                Temukan hidangan legendaris mulai dari Coto Makassar berempah 40 macam, Pallubasa hangat, Konro Bakar Karebosi, hingga manisnya Pisang Epe di tepi Pantai Losari.
+              </span>
+              <span class="absolute inset-0 block">
+                <span id="hero-subtitle-typewriter"></span><span id="hero-subtitle-cursor" class="typewriter-cursor-sm hidden" aria-hidden="true"></span>
+              </span>
+            </p>
+
+            <!-- Hero Search Bar (Responsive Desktop & Mobile M01) -->
+            <form id="form-hero-search" class="bg-surfaceBg p-2 sm:p-2.5 rounded-xl border-[1.5px] border-slate-300 focus-within:border-makassarRed focus-within:ring-2 focus-within:ring-makassarRed/15 transition">
+              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div class="flex-1 flex items-center gap-2.5 px-2 sm:px-3 py-1.5">
+                  <i class="ri-search-2-line text-slate-400 text-lg shrink-0"></i>
+                  <input id="input-hero-search" type="text" placeholder="Cari nama kuliner, kecamatan, atau bahan utama..." class="w-full bg-transparent text-sm text-slateInk placeholder-slate-400 focus:outline-none" autocomplete="off" />
+                  <button id="btn-clear-hero-search" type="button" class="hidden text-slate-400 hover:text-makassarRed text-base font-bold px-1.5" title="Bersihkan pencarian">
+                    <i class="ri-close-circle-fill"></i>
+                  </button>
+                </div>
+
+                <!-- Kecamatan Select Dropdown (Desktop/Tablet) -->
+                <div class="hidden sm:flex items-center border-l border-slate-300 pl-3 pr-2 gap-1.5">
+                  <i class="ri-map-pin-line text-slate-400 text-sm"></i>
+                  <select id="select-hero-kecamatan" class="bg-transparent text-xs md:text-[13px] font-semibold text-slate-700 focus:outline-none cursor-pointer">
+                    <option value="all">Semua Kecamatan</option>
+                    <option value="wajo">Kec. Wajo &amp; Pelabuhan</option>
+                    <option value="ujung-pandang">Pantai Losari / Ujung Pandang</option>
+                    <option value="panakkukang">Kec. Panakkukang</option>
+                    <option value="mamajang">Kec. Mamajang</option>
+                    <option value="mariso">Kec. Mariso</option>
+                  </select>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs sm:text-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg transition flex items-center justify-center gap-1.5 shrink-0">
+                  <span>Cari Kuliner</span>
+                  <i class="ri-arrow-right-line text-base"></i>
+                </button>
+              </div>
+            </form>
+
+            <!-- Quick Metrics Row -->
+            <div class="grid grid-cols-3 gap-4 sm:flex sm:items-center sm:gap-10 pt-1">
+              <div class="metric-item-anim">
+                <div id="metric-count-kuliner" class="text-lg sm:text-[22px] font-bold text-makassarRed">128+</div>
+                <div class="text-[11px] sm:text-xs text-slate-500">Kuliner Terkurasi</div>
+              </div>
+              <div class="metric-item-anim">
+                <div id="metric-count-kecamatan" class="text-lg sm:text-[22px] font-bold text-losariOrange">15</div>
+                <div class="text-[11px] sm:text-xs text-slate-500">Kecamatan Makassar</div>
+              </div>
+              <div class="metric-item-anim">
+                <div id="metric-count-rating" class="text-lg sm:text-[22px] font-bold text-slateInk inline-flex items-center gap-1">
+                  <span>4.8</span>
+                  <i class="ri-star-fill text-losariOrange text-base"></i>
+                </div>
+                <div class="text-[11px] sm:text-xs text-slate-500">Ulasan Wisatawan</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Hero Featured Visual Card (Coto Makassar Nusantara) -->
+          <div class="lg:col-span-5">
+            <div class="hero-featured-card kuliner-card-animated bg-surfaceBg border-2 border-slate-300 rounded-xl p-4 sm:p-5 flex flex-col gap-4 shadow-sm group">
+              <div class="wf-media-frame h-56 sm:h-64 w-full">
+                <img src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=80" alt="Coto Makassar Nusantara" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-900/25 to-transparent"></div>
+
+                <!-- Top Left Badge -->
+                <span class="badge-float-anim absolute top-3.5 left-3.5 bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-2.5 py-1 rounded-md text-[11px] font-bold shadow-xs inline-flex items-center gap-1">
+                  <i class="ri-award-fill"></i>
+                  <span>KULINER LEGENDARIS SEJAK 1978</span>
+                </span>
+
+                <!-- Center / Bottom Overlay Label -->
+                <div class="wf-media-caption-overlay absolute bottom-12 left-3.5 right-3.5 text-white">
+                  <div class="text-xs font-bold uppercase tracking-wider text-amber-300">HIDANGAN IKONIK MINGGU INI</div>
+                  <div class="text-sm font-semibold">Coto Makassar Nusantara • Ketupat Daun Pandan</div>
+                </div>
+
+                <!-- Bottom Right Badge -->
+                <span class="badge-float-anim-delayed absolute bottom-3 right-3 bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-2.5 py-1 rounded-md text-[11px] font-bold shadow-xs inline-flex items-center gap-1">
+                  <i class="ri-map-pin-2-fill"></i>
+                  <span>Jl. Nusantara No. 32 • Pelabuhan</span>
+                </span>
+              </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <div>
+                  <h2 class="font-serif-display text-lg sm:text-xl font-bold text-slateInk group-hover:text-makassarRed transition">Coto Makassar Nusantara</h2>
+                  <p class="text-xs sm:text-[13px] text-slate-500">Kuah kental 40 rempah &amp; kacang tanah sangrai</p>
+                </div>
+                <button type="button" data-detail-id="coto-nusantara" class="btn-open-detail btn-animated bg-makassarRed hover:bg-makassarRedHover text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-lg transition inline-flex items-center gap-1.5">
+                  <span>Lihat Detail</span>
+                  <i class="ri-arrow-right-line"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Category Strip -->
+      <div class="bg-surfaceBg border-b border-slate-200">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-4 sm:py-5 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div id="beranda-category-chips" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+            <!-- Populated dynamically by jQuery from JSON -->
+          </div>
+          <button type="button" data-nav="kategori" class="nav-trigger self-start md:self-auto bg-white hover:bg-slate-50 text-slateInk border-[1.5px] border-slate-300 font-semibold text-xs sm:text-[13px] px-4 py-2 rounded-lg transition shrink-0 inline-flex items-center gap-1.5">
+            <span>Buka Direktori Lengkap</span>
+            <i class="ri-arrow-right-line"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Culinary Cards Grid on Beranda -->
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-10 flex flex-col gap-6">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <div class="text-xs font-bold text-makassarRed tracking-wider uppercase">REKOMENDASI UTAMA</div>
+            <h2 class="font-serif-display text-2xl sm:text-[28px] font-bold text-slateInk mt-0.5">
+              Kuliner Legendaris Wajib Coba di Makassar
+            </h2>
+          </div>
+          <div class="flex items-center gap-4">
+            <span id="beranda-result-info" class="text-xs sm:text-sm text-slate-500 hidden"></span>
+            <button type="button" data-nav="kategori" class="nav-trigger text-xs sm:text-sm font-bold text-makassarRed hover:underline inline-flex items-center gap-1">
+              <span>Lihat Semua 48 Kuliner</span>
+              <i class="ri-arrow-right-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Cards Container -->
+        <div id="beranda-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Rendered by jQuery -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- MENU 02: KATEGORI & DIREKTORI KULINER (DESKTOP 02 & MOBILE M02)     -->
+    <!-- =================================================================== -->
+    <section id="section-kategori" class="page-section hidden">
+      <!-- Page Header -->
+      <div class="bg-white border-b-[1.5px] border-slate-200">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-5 sm:py-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs text-slate-500 mb-1.5">
+              <button type="button" data-nav="beranda" class="nav-trigger hover:text-makassarRed">Beranda</button>
+              <span> / </span>
+              <strong class="text-makassarRed">Kategori &amp; Direktori Kuliner Makassar</strong>
+            </div>
+            <h1 class="font-serif-display text-2xl sm:text-3xl lg:text-[34px] font-bold text-slateInk">
+              Direktori Lengkap Kuliner Kota Makassar
+            </h1>
+          </div>
+
+          <!-- Desktop & Mobile Controls -->
+          <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <!-- Mobile Filter Drawer Trigger (Matches M02: Filter Kecamatan) -->
+            <button id="btn-mobile-filter-toggle" type="button" class="lg:hidden flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 bg-white border-[1.5px] border-slate-300 text-slateInk font-semibold text-xs px-3.5 py-2.5 rounded-lg">
+              <i class="ri-equalizer-line text-makassarRed text-sm"></i>
+              <span>Filter Kecamatan</span>
+              <span id="mobile-filter-count-badge" class="bg-makassarRed text-white text-[10px] px-1.5 py-0.5 rounded-full">Semua</span>
+            </button>
+
+            <!-- Sort Select Dropdown -->
+            <div class="flex-1 sm:flex-initial">
+              <select id="select-directory-sort" class="w-full bg-white border-[1.5px] border-slate-300 text-slateInk font-semibold text-xs sm:text-sm px-3.5 py-2.5 rounded-lg focus:outline-none focus:border-makassarRed cursor-pointer">
+                <option value="popular">Urutkan: Terpopuler (Rating 4.9)</option>
+                <option value="price-asc">Urutkan: Harga Terendah</option>
+                <option value="price-desc">Urutkan: Harga Tertinggi</option>
+                <option value="reviews">Urutkan: Ulasan Terbanyak</option>
+                <option value="name-asc">Urutkan: Nama A–Z</option>
+              </select>
+            </div>
+
+            <!-- Open Map View Button -->
+            <button type="button" data-nav="peta" class="nav-trigger hidden sm:inline-flex items-center gap-2 bg-losariOrange hover:bg-losariOrangeHover text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg transition">
+              <i class="ri-map-2-line text-base"></i>
+              <span>Buka Tampilan Peta</span>
+              <i class="ri-arrow-right-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Category Chips Bar (Matches M02) -->
+        <div id="mobile-directory-chips" class="lg:hidden px-4 py-3 bg-surfaceBg border-t border-slate-200 flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <!-- Populated dynamically by jQuery -->
+        </div>
+      </div>
+
+      <!-- Main Directory Split: Left Filter Sidebar + Right Results Grid -->
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Left Filter Sidebar (Collapsible on Mobile, Sticky on Desktop) -->
+        <aside id="directory-filter-sidebar" class="hidden lg:flex lg:col-span-3 bg-white border-[1.5px] border-slate-200 rounded-xl p-5 flex-col gap-5 shadow-xs">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+            <span class="text-sm font-bold text-slateInk inline-flex items-center gap-1.5">
+              <i class="ri-filter-3-line text-makassarRed"></i>
+              <span>Filter Direktori</span>
+            </span>
+            <button id="btn-reset-directory-filter" type="button" class="text-xs font-semibold text-makassarRed hover:underline inline-flex items-center gap-1">
+              <i class="ri-refresh-line"></i>
+              <span>Reset Filter</span>
+            </button>
+          </div>
+
+          <!-- Keyword Search inside Directory -->
+          <div>
+            <label for="input-directory-search" class="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-2">
+              CARI NAMA / BAHAN / JALAN
+            </label>
+            <div class="flex items-center gap-2 bg-surfaceBg border-[1.5px] border-slate-300 rounded-lg px-3 py-2 focus-within:border-makassarRed">
+              <i class="ri-search-2-line text-slate-400 text-sm shrink-0"></i>
+              <input id="input-directory-search" type="text" placeholder="Ketik Coto, Konro, Wajo..." class="w-full bg-transparent text-xs text-slateInk focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- Category Filter Checkboxes -->
+          <div class="border-t border-slate-200 pt-4">
+            <div class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2.5">KATEGORI HIDANGAN</div>
+            <div id="filter-category-list" class="flex flex-col gap-1.5 text-[13px]">
+              <!-- Populated by jQuery -->
+            </div>
+          </div>
+
+          <!-- Kecamatan Checkboxes -->
+          <div class="border-t border-slate-200 pt-4">
+            <div class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2.5">KECAMATAN DI MAKASSAR</div>
+            <div id="filter-kecamatan-list" class="flex flex-col gap-2 text-[13px]">
+              <!-- Populated by jQuery -->
+            </div>
+          </div>
+
+          <!-- Rentang Harga Pills -->
+          <div class="border-t border-slate-200 pt-4">
+            <div class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2.5">RENTANG HARGA</div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-price="under25" class="btn-price-filter px-2.5 py-1 rounded-md text-xs font-bold border border-makassarRedBorder bg-makassarRedLight text-makassarRed transition">
+                &lt; Rp 25.000
+              </button>
+              <button type="button" data-price="25to50" class="btn-price-filter px-2.5 py-1 rounded-md text-xs font-bold border border-losariOrangeBorder bg-losariOrangeLight text-losariOrange transition">
+                Rp 25rb – 50rb
+              </button>
+              <button type="button" data-price="above50" class="btn-price-filter px-2.5 py-1 rounded-full text-xs font-medium border border-slate-300 bg-white text-slate-700 transition">
+                &gt; Rp 50.000
+              </button>
+            </div>
+          </div>
+
+          <button id="btn-apply-filter-mobile" type="button" class="w-full bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-sm py-2.5 rounded-lg transition">
+            Terapkan Filter (<span id="filter-button-count">10</span> Hasil)
+          </button>
+        </aside>
+
+        <!-- Right Directory Results -->
+        <div class="lg:col-span-9 flex flex-col gap-5">
+          <!-- Status & Active Tags Bar -->
+          <div class="bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            <div id="directory-status-text" class="text-xs sm:text-sm text-slate-700">
+              Menampilkan <strong class="text-slateInk">10 Kuliner</strong> untuk kategori <strong class="text-makassarRed">Semua Kategori</strong>
+            </div>
+            <div id="directory-active-tags" class="flex flex-wrap items-center gap-2">
+              <!-- Active removable tags rendered by jQuery -->
+            </div>
+          </div>
+
+          <!-- Results Cards Grid -->
+          <div id="directory-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Rendered by jQuery -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- MENU 03: DETAIL KULINER (DESKTOP 03 & MOBILE M03)                   -->
+    <!-- =================================================================== -->
+    <section id="section-detail" class="page-section hidden">
+      <!-- Quick Dish Selector Strip -->
+      <div class="bg-surfaceBg border-b border-slate-200 px-4 sm:px-8 lg:px-16 py-2.5">
+        <div class="max-w-[1440px] mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <span class="text-[11px] font-bold text-slate-500 uppercase shrink-0 mr-1">Pilih Kuliner:</span>
+          <div id="detail-quick-switcher" class="flex items-center gap-1.5">
+            <!-- Populated by jQuery -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Header & Breadcrumb -->
+      <div class="bg-white border-b-[1.5px] border-slate-200">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-5 sm:py-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <div class="text-xs text-slate-500 mb-2 flex flex-wrap items-center gap-1">
+              <button type="button" data-nav="kategori" class="nav-trigger hover:text-makassarRed font-medium inline-flex items-center gap-1">
+                <i class="ri-arrow-left-line"></i>
+                <span>Kembali ke Direktori</span>
+              </button>
+              <span>/</span>
+              <span id="detail-breadcrumb-category">Hidangan Berkuah</span>
+              <span>/</span>
+              <strong id="detail-breadcrumb-title" class="text-makassarRed">Coto Makassar Nusantara</strong>
+            </div>
+            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <h1 id="detail-title" class="font-serif-display text-2xl sm:text-3xl lg:text-[34px] font-bold text-slateInk">
+                Coto Makassar Nusantara
+              </h1>
+              <span id="detail-rating-badge" class="bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1">
+                <i class="ri-star-fill"></i>
+                <span>4.9 (1.240 Ulasan)</span>
+              </span>
+              <span id="detail-established-badge" class="bg-halalGreenLight text-halalGreen border border-halalGreenBorder px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1">
+                <i class="ri-verified-badge-fill"></i>
+                <span>Kuliner Legendaris Sejak 1978</span>
+              </span>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button id="btn-detail-favorite" type="button" class="bg-white hover:bg-slate-50 text-slateInk border-[1.5px] border-slate-300 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg transition inline-flex items-center gap-1.5">
+              <span id="detail-fav-icon" class="inline-flex items-center"><i class="ri-heart-3-line text-base"></i></span>
+              <span id="detail-fav-text">Simpan Favorit</span>
+            </button>
+            <button id="btn-detail-open-map" type="button" class="bg-losariOrange hover:bg-losariOrangeHover text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg transition inline-flex items-center gap-1.5">
+              <i class="ri-map-pin-2-fill text-base"></i>
+              <span>Lihat di Peta Interaktif</span>
+              <i class="ri-arrow-right-line"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Content Split -->
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Left Column: Gallery, History & Composition, Visitor Reviews -->
+        <div class="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
+          <!-- Gallery Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2 wf-media-frame h-56 sm:h-64 lg:h-72 group cursor-pointer" id="detail-gallery-main-box">
+              <img id="detail-img-main" src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=80" alt="Foto Utama Kuliner" />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
+              <span id="detail-badge-mobile-est" class="sm:hidden absolute top-3 left-3 bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-2.5 py-0.5 rounded text-[11px] font-bold">
+                LEGENDARIS 1978
+              </span>
+              <span class="sm:hidden absolute bottom-3 right-3 bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-2.5 py-0.5 rounded text-[11px] font-bold">
+                1 / 3 Foto
+              </span>
+              <div id="detail-caption-main" class="wf-media-caption-overlay absolute bottom-3 left-3 right-3 text-white text-xs sm:text-sm font-bold">
+                Foto Utama: Semangkuk Coto Makassar &amp; Ketupat Pandan
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-1 gap-3 sm:gap-4">
+              <div class="wf-media-frame h-28 sm:h-[136px] cursor-pointer detail-thumb-trigger" data-thumb="sec1">
+                <img id="detail-img-sec1" src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80" alt="Racikan Rempah" />
+                <div class="absolute inset-0 bg-slate-950/40 hover:bg-slate-950/20 transition flex items-end p-2.5">
+                  <span id="detail-caption-sec1" class="text-white text-xs font-bold">Racikan 40 Rempah</span>
+                </div>
+              </div>
+              <div class="wf-media-frame h-28 sm:h-[136px] cursor-pointer detail-thumb-trigger" data-thumb="sec2">
+                <img id="detail-img-sec2" src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80" alt="Suasana Kedai" />
+                <div class="absolute inset-0 bg-slate-950/40 hover:bg-slate-950/20 transition flex items-end p-2.5">
+                  <span id="detail-caption-sec2" class="text-white text-xs font-bold">Suasana Kedai Nusantara</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sejarah & Cita Rasa Card -->
+          <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-5 sm:p-6 flex flex-col gap-3">
+            <div class="text-xs font-bold text-makassarRed uppercase tracking-wider">SEJARAH &amp; CITA RASA</div>
+            <h2 id="detail-history-title" class="font-serif-display text-xl sm:text-2xl font-bold text-slateInk">
+              Warisan Kuliner Kerajaan Gowa dengan 40 Macam Rempah
+            </h2>
+            <p id="detail-history-body" class="text-sm text-slate-700 leading-relaxed">
+              Coto Makassar Nusantara dikenal dengan kuah kaldu sapi kental yang dimasak dalam kuali tanah liat (korong butta) bersama 40 jenis rempah tradisional—termasuk lengkuas, serai, ketumbar, jintan, pala, dan tumbukan kacang tanah sangrai yang memberikan tekstur gurih lembut.
+            </p>
+
+            <!-- 3 Composition Boxes -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div class="bg-surfaceBg border border-slate-200 rounded-lg p-3.5">
+                <div class="text-[11px] font-semibold text-slate-500 uppercase">BAHAN UTAMA</div>
+                <div id="detail-comp-bahan" class="text-xs sm:text-[13px] font-bold text-slateInk mt-1">Daging Sapi &amp; Jeroan Pilihan</div>
+              </div>
+              <div class="bg-surfaceBg border border-slate-200 rounded-lg p-3.5">
+                <div class="text-[11px] font-semibold text-slate-500 uppercase">PENDAMPING KHAS</div>
+                <div id="detail-comp-pendamping" class="text-xs sm:text-[13px] font-bold text-slateInk mt-1">Ketupat Daun Pandan &amp; Buras</div>
+              </div>
+              <div class="bg-surfaceBg border border-slate-200 rounded-lg p-3.5">
+                <div class="text-[11px] font-semibold text-slate-500 uppercase">SAMBAL KHAS</div>
+                <div id="detail-comp-sambal" class="text-xs sm:text-[13px] font-bold text-slateInk mt-1">Sambal Tauco &amp; Jeruk Nipis</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ulasan Pengunjung Card + Add Review -->
+          <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-5 sm:p-6 flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <h3 id="detail-reviews-heading" class="font-serif-display text-lg sm:text-xl font-bold text-slateInk">
+                Ulasan Pengunjung (1.240)
+              </h3>
+              <span id="detail-reviews-score" class="bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-2.5 py-1 rounded-md text-xs font-bold inline-flex items-center gap-1">
+                <i class="ri-star-fill"></i>
+                <span>4.9 / 5.0</span>
+              </span>
+            </div>
+
+            <div id="detail-reviews-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <!-- Populated by jQuery -->
+            </div>
+
+            <!-- Add Visitor Review Form -->
+            <form id="form-add-review" class="border-t border-slate-200 pt-4 mt-1 flex flex-col sm:flex-row gap-2.5">
+              <input id="input-review-name" type="text" placeholder="Nama Anda" required class="sm:w-44 bg-surfaceBg border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-makassarRed" />
+              <input id="input-review-comment" type="text" placeholder="Tulis pengalaman kuliner Anda di sini..." required class="flex-1 bg-surfaceBg border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-makassarRed" />
+              <button type="submit" class="bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs px-4 py-2 rounded-lg transition shrink-0 inline-flex items-center justify-center gap-1.5">
+                <i class="ri-send-plane-fill"></i>
+                <span>Kirim Ulasan</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Sticky Info & Live Leaflet Mini-Map -->
+        <div class="lg:col-span-5 xl:col-span-4">
+          <div class="bg-white border-2 border-slate-300 rounded-xl p-5 sm:p-6 flex flex-col gap-4 sticky top-24 shadow-xs">
+            <div class="text-xs font-bold text-makassarRed uppercase tracking-wider">INFORMASI DESTINASI KULINER</div>
+
+            <div class="flex flex-col gap-3 text-sm">
+              <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                <span class="text-slate-500 text-xs sm:text-[13px] inline-flex items-center gap-1.5"><i class="ri-price-tag-3-line text-slate-400"></i> Rentang Harga</span>
+                <strong id="detail-info-price" class="text-makassarRed text-sm sm:text-base font-bold">Rp 35.000 – Rp 55.000</strong>
+              </div>
+              <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                <span class="text-slate-500 text-xs sm:text-[13px] inline-flex items-center gap-1.5"><i class="ri-time-line text-slate-400"></i> Jam Operasional</span>
+                <strong id="detail-info-hours" class="text-halalGreen text-xs sm:text-[13px] font-bold">Buka • 07.00 – 22.00 WITA</strong>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-slate-500 text-xs sm:text-[13px] inline-flex items-center gap-1.5"><i class="ri-map-pin-2-line text-slate-400"></i> Alamat Lengkap</span>
+                <strong id="detail-info-address" class="text-slateInk text-xs sm:text-sm font-semibold">
+                  Jl. Nusantara No. 32, Pattunuang, Kec. Wajo, Kota Makassar
+                </strong>
+              </div>
+            </div>
+
+            <!-- Interactive Leaflet Mini-Map -->
+            <div class="rounded-xl overflow-hidden border-[1.5px] border-dashed border-slate-400 bg-wireframeGray relative">
+              <div id="detail-mini-map" class="h-44 w-full"></div>
+              <div class="bg-surfaceBg border-t border-slate-200 px-3 py-2 text-center">
+                <span id="detail-distance-info" class="text-[11px] font-medium text-slate-600">
+                  1,2 km dari Fort Rotterdam &amp; Pantai Losari
+                </span>
+              </div>
+            </div>
+
+            <button id="btn-detail-card-to-map" type="button" class="w-full bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs sm:text-sm py-3 rounded-lg transition inline-flex items-center justify-center gap-1.5">
+              <i class="ri-map-pin-line text-base"></i>
+              <span>Buka di Peta Kuliner Interaktif</span>
+              <i class="ri-arrow-right-line"></i>
+            </button>
+            <button id="btn-detail-directions" type="button" class="w-full bg-white hover:bg-slate-50 text-slateInk border-[1.5px] border-slate-300 font-semibold text-xs sm:text-sm py-2.5 rounded-lg transition inline-flex items-center justify-center gap-1.5">
+              <i class="ri-navigation-line text-makassarRed"></i>
+              <span>Petunjuk Arah &amp; Rute</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- MENU 04: PETA KULINER INTERAKTIF MAKASSAR (LEAFLET.JS)              -->
+    <!-- =================================================================== -->
+    <section id="section-peta" class="page-section hidden">
+      <div class="max-w-[1440px] mx-auto bg-white border-b border-slate-200">
+        <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[760px]">
+
+          <!-- Left Panel: Pinned Culinary Spots per Kecamatan -->
+          <div class="lg:col-span-4 border-b lg:border-b-0 lg:border-r-[1.5px] border-slate-300 p-4 sm:p-6 flex flex-col gap-4 bg-white">
+            <div>
+              <div class="text-[11px] font-bold text-makassarRed uppercase tracking-wider">PETA INTERAKTIF KOTA MAKASSAR</div>
+              <h1 class="font-serif-display text-xl sm:text-2xl font-bold text-slateInk mt-0.5">
+                Eksplorasi Titik Kuliner per Kecamatan
+              </h1>
+            </div>
+
+            <!-- Search Input inside Map Panel -->
+            <div class="flex items-center gap-2 bg-surfaceBg border-[1.5px] border-slate-300 rounded-lg px-3 py-2 focus-within:border-makassarRed">
+              <i class="ri-search-2-line text-slate-400 text-sm shrink-0"></i>
+              <input id="input-map-search" type="text" placeholder="Cari titik kuliner atau jalan di peta..." class="w-full bg-transparent text-xs text-slateInk focus:outline-none" />
+            </div>
+
+            <!-- Kecamatan Filter Chips for Map -->
+            <div id="map-filter-chips" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+              <button type="button" data-map-filter="all" class="btn-map-chip bg-makassarRed text-white text-xs font-semibold px-3 py-1.5 rounded-full shrink-0">
+                Semua Titik (10)
+              </button>
+              <button type="button" data-map-filter="wajo" class="btn-map-chip bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full shrink-0 hover:border-makassarRed">
+                Kec. Wajo
+              </button>
+              <button type="button" data-map-filter="ujung-pandang" class="btn-map-chip bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full shrink-0 hover:border-makassarRed">
+                Pantai Losari
+              </button>
+              <button type="button" data-map-filter="panakkukang" class="btn-map-chip bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full shrink-0 hover:border-makassarRed">
+                Panakkukang
+              </button>
+              <button type="button" data-map-filter="mamajang" class="btn-map-chip bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full shrink-0 hover:border-makassarRed">
+                Mamajang
+              </button>
+              <button type="button" data-map-filter="24jam" class="btn-map-chip bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs font-medium px-3 py-1.5 rounded-full shrink-0 hover:border-makassarRed">
+                Buka 24 Jam
+              </button>
+            </div>
+
+            <!-- Scrollable List of Pinned Spots (Desktop & Tablet; Collapsible/Compact on Mobile) -->
+            <div id="map-sidebar-list" class="hidden lg:flex flex-col gap-3 overflow-y-auto custom-scrollbar max-h-[540px] pr-1">
+              <!-- Populated by jQuery -->
+            </div>
+          </div>
+
+          <!-- Right Panel: Leaflet.js Interactive Map Canvas + Mobile Bottom Sheet -->
+          <div class="lg:col-span-8 flex flex-col justify-between bg-wireframeGray relative">
+
+            <!-- Map Container Wrapper -->
+            <div class="relative w-full h-[380px] sm:h-[480px] lg:h-[700px]">
+              <!-- Real Leaflet Map Element -->
+              <div id="makassar-main-map" class="w-full h-full"></div>
+
+              <!-- Top Left Floating Map Title Banner (Matches Figma 04) -->
+              <div class="absolute top-3.5 left-3.5 z-20 bg-white/95 backdrop-blur border-[1.5px] border-slate-300 px-3.5 py-2 rounded-lg text-xs font-semibold text-slateInk shadow-sm pointer-events-none inline-flex items-center gap-1.5">
+                <i class="ri-road-map-fill text-makassarRed text-sm"></i>
+                <span>Kanvas Peta Vektor Kota Makassar • Selat Makassar &amp; 15 Kecamatan</span>
+              </div>
+
+              <!-- Top Right Custom Zoom & Reset Buttons (Matches Figma 04) -->
+              <div class="absolute top-3.5 right-3.5 z-20 flex flex-col gap-1.5">
+                <button id="btn-map-zoom-in" type="button" class="w-10 h-10 rounded-lg bg-white hover:bg-slate-50 border-[1.5px] border-slate-300 font-bold text-lg text-slateInk shadow-sm flex items-center justify-center transition" title="Perbesar Peta">
+                  <i class="ri-add-line"></i>
+                </button>
+                <button id="btn-map-zoom-out" type="button" class="w-10 h-10 rounded-lg bg-white hover:bg-slate-50 border-[1.5px] border-slate-300 font-bold text-lg text-slateInk shadow-sm flex items-center justify-center transition" title="Perkecil Peta">
+                  <i class="ri-subtract-line"></i>
+                </button>
+                <button id="btn-map-reset-bounds" type="button" class="w-10 h-10 rounded-lg bg-white hover:bg-slate-50 border-[1.5px] border-slate-300 font-bold text-base text-makassarRed shadow-sm flex items-center justify-center transition" title="Reset Pusat Peta Makassar">
+                  <i class="ri-focus-3-line"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Bottom Sheet Active Pin Card (Matches Figma M04 390px) -->
+            <div id="map-mobile-bottom-sheet" class="lg:hidden bg-white border-t-2 border-makassarRed p-4 flex flex-col gap-2.5">
+              <!-- Populated dynamically with currently active pin -->
+            </div>
+
+            <!-- Bottom Map Legend Bar (Matches Figma 04) -->
+            <div class="bg-white border-t-[1.5px] border-slate-300 px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex flex-wrap items-center gap-4 sm:gap-5">
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-makassarRed inline-block"></span> <strong>Pin Merah:</strong> Kuliner Berkuah &amp; Daging</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-losariOrange inline-block"></span> <strong>Pin Oranye:</strong> Seafood &amp; Pantai Losari</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-halalGreen inline-block"></span> <strong>Pin Hijau:</strong> Buka 24 Jam</span>
+              </div>
+              <span id="map-coord-indicator" class="text-slate-500 font-medium">
+                Koordinat Pusat: -5.1477° S, 119.4327° E
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- MENU 05: ARTIKEL & CERITA KULINER MAKASSAR (DESKTOP 05 & MOBILE M05)-->
+    <!-- =================================================================== -->
+    <section id="section-artikel" class="page-section hidden">
+      <!-- Featured Editorial Banner -->
+      <div class="bg-white border-b-[1.5px] border-slate-200">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-10">
+          <div class="bg-surfaceBg border-[1.5px] border-slate-300 rounded-2xl p-4 sm:p-7 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-9 items-center">
+            <!-- Featured Image -->
+            <div class="lg:col-span-6 wf-media-frame h-56 sm:h-64 w-full group">
+              <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1000&q=80" alt="Filosofi 40 Rempah Coto Makassar" />
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/20 to-transparent"></div>
+              <span class="absolute top-3 left-3 bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-2.5 py-1 rounded-md text-[11px] font-bold">
+                CERITA UTAMA • SEJARAH KULINER
+              </span>
+              <div class="wf-media-caption-overlay absolute bottom-3 left-3 right-3 text-white text-xs sm:text-sm font-bold">
+                Ilustrasi Editorial: Filosofi 40 Rempah Coto Makassar
+              </div>
+            </div>
+
+            <!-- Featured Copy -->
+            <div class="lg:col-span-6 flex flex-col gap-3.5">
+              <span class="self-start bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-2.5 py-1 rounded-md text-[11px] font-bold">
+                Waktu Baca 6 Menit • Kurasi Budaya
+              </span>
+              <h1 class="font-serif-display text-2xl sm:text-3xl font-bold text-slateInk leading-snug">
+                Filosofi 40 Macam Rempah dalam Semangkuk Coto Makassar &amp; Jejak Sejarah Kerajaan Gowa
+              </h1>
+              <p class="text-sm text-slate-600 leading-relaxed">
+                Mengenal bagaimana perpaduan rempah Nusantara dan kacang tanah sangrai meracik identitas kuliner kebanggaan masyarakat Bugis-Makassar sejak abad ke-16.
+              </p>
+              <div class="flex flex-wrap items-center gap-3 pt-1">
+                <button type="button" data-article-id="filosofi-40-rempah-coto" class="btn-read-article bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-lg transition inline-flex items-center gap-1.5">
+                  <i class="ri-book-open-line text-base"></i>
+                  <span>Baca Artikel Lengkap</span>
+                  <i class="ri-arrow-right-line"></i>
+                </button>
+                <button type="button" data-detail-id="coto-nusantara" class="btn-open-detail bg-white hover:bg-slate-50 text-slateInk border-[1.5px] border-slate-300 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg transition inline-flex items-center gap-1.5">
+                  <i class="ri-map-pin-2-line text-makassarRed"></i>
+                  <span>Lihat Lokasi Coto Nusantara</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Article Filter Chips & Grid -->
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-10 flex flex-col gap-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+            <button type="button" data-article-topic="all" class="btn-article-topic bg-makassarRed text-white text-xs sm:text-[13px] font-semibold px-4 py-2 rounded-full shrink-0">
+              Semua Artikel (18)
+            </button>
+            <button type="button" data-article-topic="sejarah" class="btn-article-topic bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs sm:text-[13px] font-medium px-4 py-2 rounded-full shrink-0 hover:border-makassarRed">
+              Sejarah &amp; Filosofi
+            </button>
+            <button type="button" data-article-topic="rute-24-jam" class="btn-article-topic bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs sm:text-[13px] font-medium px-4 py-2 rounded-full shrink-0 hover:border-makassarRed">
+              Rute Kuliner 24 Jam
+            </button>
+            <button type="button" data-article-topic="umkm-legenda" class="btn-article-topic bg-white border-[1.5px] border-slate-300 text-slate-700 text-xs sm:text-[13px] font-medium px-4 py-2 rounded-full shrink-0 hover:border-makassarRed">
+              UMKM &amp; Legenda
+            </button>
+          </div>
+          <span id="article-count-label" class="text-xs sm:text-[13px] text-slate-500">Menampilkan 3 Artikel Pilihan</span>
+        </div>
+
+        <div id="articles-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Rendered by jQuery -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- MENU 06: TENTANG & FORM REKOMENDASI (DESKTOP 06 & MOBILE M06)       -->
+    <!-- =================================================================== -->
+    <section id="section-tentang" class="page-section hidden">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-8 sm:py-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+
+        <!-- Left Column: About Platform & Designer Identity -->
+        <div class="lg:col-span-5 flex flex-col gap-5">
+          <span class="self-start bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-3 py-1 rounded-md text-[11px] font-bold tracking-wide">
+            TENTANG PORTAL KULINER MAKASSAR
+          </span>
+
+          <h1 class="font-serif-display text-2xl sm:text-4xl font-bold text-slateInk leading-tight">
+            Mendokumentasikan Kekayaan Rasa &amp; UMKM Kuliner Kota Makassar
+          </h1>
+
+          <p class="text-sm sm:text-[15px] text-slate-600 leading-relaxed">
+            Platform direktori dan pemetaan interaktif ini dirancang untuk memudahkan masyarakat lokal maupun wisatawan menemukan kuliner autentik Makassar berdasarkan kategori hidangan, kecamatan, dan cerita sejarahnya.
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-4">
+              <div class="text-2xl font-bold text-makassarRed">100% Lokal</div>
+              <div class="text-xs sm:text-[13px] text-slate-600 mt-1">Kurasi warung legendaris &amp; UMKM asli Makassar</div>
+            </div>
+            <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-4">
+              <div class="text-2xl font-bold text-losariOrange">15 Kecamatan</div>
+              <div class="text-xs sm:text-[13px] text-slate-600 mt-1">Pemetaan titik koordinat akurat &amp; jam buka</div>
+            </div>
+          </div>
+
+          <div class="bg-white border-[1.5px] border-slate-200 rounded-xl p-5 flex flex-col gap-1.5">
+            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">IDENTITAS DESAINER</div>
+            <div class="font-serif-display text-lg sm:text-xl font-bold text-slateInk">
+              Muhammad Bintang — NIM 20232205029
+            </div>
+            <div class="text-xs sm:text-[13px] text-slate-600">
+              Tugas T.701 Desain Website Kuliner • Wireframe Responsif &amp; Prototype Interaktif
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Community Recommendation Form with Inline Validation -->
+        <div class="lg:col-span-7">
+          <form id="form-rekomendasi-kuliner" novalidate class="bg-white border-2 border-slate-300 rounded-2xl p-5 sm:p-8 flex flex-col gap-5 shadow-xs">
+            <div>
+              <span class="bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-2.5 py-1 rounded-md text-[11px] font-bold">
+                KONTRIBUSI KOMUNITAS
+              </span>
+              <h2 class="font-serif-display text-xl sm:text-2xl font-bold text-slateInk mt-2">
+                Formulir Rekomendasi Kuliner Baru
+              </h2>
+              <p class="text-xs sm:text-[13px] text-slate-500 mt-0.5">
+                Bantu kami menambahkan warung atau hidangan legendaris Makassar ke dalam direktori dan peta interaktif.
+              </p>
+            </div>
+
+            <!-- Field 1: Nama Kuliner / Warung (Valid State by default like Figma 06) -->
+            <div class="flex flex-col gap-1.5">
+              <label for="rec-name" class="text-xs sm:text-[13px] font-semibold text-slateInk">
+                Nama Kuliner / Warung *
+              </label>
+              <div id="rec-name-wrapper" class="flex items-center justify-between bg-halalGreenLight border-[1.5px] border-halalGreen rounded-lg px-3.5 py-2.5 transition">
+                <input id="rec-name" type="text" value="Pallubasa Onta Lama" placeholder="Contoh: Pallubasa Onta Lama" class="w-full bg-transparent text-xs sm:text-sm font-semibold text-slateInk focus:outline-none" />
+                <span id="rec-name-badge" class="text-xs font-bold text-halalGreen shrink-0 ml-2 inline-flex items-center gap-1"><i class="ri-checkbox-circle-fill"></i> Nama Valid</span>
+              </div>
+              <span id="rec-name-helper" class="hidden text-xs text-makassarRed">Mohon isi nama kuliner minimal 3 karakter.</span>
+            </div>
+
+            <!-- Field 2 & 3: Kategori & Kecamatan -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label for="rec-category" class="text-xs sm:text-[13px] font-semibold text-slateInk">
+                  Kategori Hidangan *
+                </label>
+                <select id="rec-category" class="bg-surfaceBg border-[1.5px] border-slate-300 rounded-lg px-3.5 py-2.5 text-xs sm:text-[13px] font-medium text-slateInk focus:outline-none focus:border-makassarRed">
+                  <option value="berkuah">Hidangan Berkuah</option>
+                  <option value="daging-bakar">Daging &amp; Konro Bakar</option>
+                  <option value="seafood">Ikan Bakar &amp; Seafood</option>
+                  <option value="dessert">Pisang Epe &amp; Dessert</option>
+                  <option value="mie-jajanan">Mie &amp; Jajanan Khas</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label for="rec-kecamatan" class="text-xs sm:text-[13px] font-semibold text-slateInk">
+                  Kecamatan *
+                </label>
+                <select id="rec-kecamatan" class="bg-surfaceBg border-[1.5px] border-slate-300 rounded-lg px-3.5 py-2.5 text-xs sm:text-[13px] font-medium text-slateInk focus:outline-none focus:border-makassarRed">
+                  <option value="mamajang">Kec. Mamajang</option>
+                  <option value="wajo">Kec. Wajo &amp; Pelabuhan</option>
+                  <option value="ujung-pandang">Kec. Ujung Pandang / Losari</option>
+                  <option value="panakkukang">Kec. Panakkukang</option>
+                  <option value="mariso">Kec. Mariso</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Field 4: Alamat Lengkap & Patokan Lokasi (Interactive Validation matching Figma 06) -->
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <label id="rec-address-label" for="rec-address" class="text-xs sm:text-[13px] font-semibold text-makassarRed">
+                  Alamat Lengkap &amp; Patokan Lokasi *
+                </label>
+                <button id="btn-autofill-valid-address" type="button" class="text-[11px] font-semibold text-losariOrange hover:underline inline-flex items-center gap-1">
+                  <i class="ri-magic-line"></i>
+                  <span>Isi Contoh Nomor Jalan Lengkap</span>
+                </button>
+              </div>
+              <div id="rec-address-wrapper" class="flex items-center justify-between bg-makassarRedLight border-[1.5px] border-makassarRed rounded-lg px-3.5 py-2.5 transition">
+                <input id="rec-address" type="text" value="Jl. Onta Lama (Nomor bangunan belum diisi)" placeholder="Contoh: Jl. Onta Lama No. 103, Kec. Mamajang" class="w-full bg-transparent text-xs sm:text-sm text-makassarRed focus:outline-none" />
+                <span id="rec-address-badge" class="text-xs font-bold text-makassarRed shrink-0 ml-2 inline-flex items-center gap-1"><i class="ri-error-warning-fill"></i> Wajib Lengkap</span>
+              </div>
+              <span id="rec-address-helper" class="text-xs text-makassarRed">
+                Mohon lengkapi nomor jalan atau patokan agar titik peta akurat.
+              </span>
+            </div>
+
+            <!-- Field 5: Keunikan Hidangan & Kisaran Harga -->
+            <div class="flex flex-col gap-1.5">
+              <label for="rec-desc" class="text-xs sm:text-[13px] font-semibold text-slateInk">
+                Keunikan Hidangan &amp; Kisaran Harga
+              </label>
+              <textarea id="rec-desc" rows="3" placeholder="Deskripsikan keunikan rasa dan harga per porsi..." class="bg-surfaceBg border-[1.5px] border-slate-300 rounded-lg px-3.5 py-2.5 text-xs sm:text-[13px] text-slate-700 focus:outline-none focus:border-makassarRed">Kuah kelapa sangrai pekat dengan daging pipi sapi empuk, harga Rp 35.000/porsi...</textarea>
+            </div>
+
+            <!-- Submit & Reset Row -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-1">
+              <button type="submit" class="flex-1 bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs sm:text-sm py-3 px-5 rounded-lg transition inline-flex items-center justify-center gap-1.5">
+                <i class="ri-send-plane-fill"></i>
+                <span>Kirim Rekomendasi Kuliner</span>
+                <i class="ri-arrow-right-line"></i>
+              </button>
+              <button id="btn-reset-rekomendasi" type="button" class="bg-white hover:bg-slate-50 text-slateInk border-[1.5px] border-slate-300 font-semibold text-xs sm:text-sm py-3 px-5 rounded-lg transition inline-flex items-center justify-center gap-1.5">
+                <i class="ri-refresh-line"></i>
+                <span>Reset</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: ARTICLE READER                                                 -->
+  <!-- ===================================================================== -->
+  <div id="modal-article-reader" class="fixed inset-0 z-50 hidden bg-slate-900/65 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white border-2 border-slate-300 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+      <div class="px-5 py-4 bg-surfaceBg border-b border-slate-200 flex items-center justify-between">
+        <span id="modal-article-badge" class="bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-2.5 py-1 rounded-md text-[11px] font-bold">
+          SEJARAH KULINER
+        </span>
+        <button id="btn-close-article-modal" type="button" class="w-8 h-8 rounded-lg bg-white border border-slate-300 text-slate-600 hover:text-makassarRed font-bold flex items-center justify-center">
+          <i class="ri-close-line text-lg"></i>
+        </button>
+      </div>
+      <div class="p-5 sm:p-7 overflow-y-auto custom-scrollbar flex flex-col gap-4">
+        <div class="wf-media-frame h-52 sm:h-64 w-full">
+          <img id="modal-article-img" src="" alt="Ilustrasi Artikel" />
+        </div>
+        <div id="modal-article-meta" class="text-xs text-slate-500 font-medium"></div>
+        <h2 id="modal-article-title" class="font-serif-display text-2xl sm:text-3xl font-bold text-slateInk leading-snug"></h2>
+        <div id="modal-article-body" class="flex flex-col gap-3 text-sm text-slate-700 leading-relaxed"></div>
+      </div>
+      <div class="px-5 py-4 bg-surfaceBg border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <button id="btn-modal-article-kuliner" type="button" class="bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-lg transition inline-flex items-center gap-1.5">
+          <span>Lihat Detail Kuliner Terkait</span>
+          <i class="ri-arrow-right-line"></i>
+        </button>
+        <button id="btn-close-article-modal-bottom" type="button" class="bg-white border border-slate-300 text-slateInk font-semibold text-xs sm:text-sm px-4 py-2 rounded-lg">
+          Tutup Artikel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOAST NOTIFICATION                                                    -->
+  <!-- ===================================================================== -->
+  <div id="app-toast" class="fixed bottom-5 right-5 z-50 hidden bg-slateInk text-white px-4 py-3 rounded-xl shadow-xl border-l-4 border-makassarRed flex items-center gap-3 max-w-sm">
+    <span id="app-toast-icon" class="text-lg inline-flex items-center"><i class="ri-checkbox-circle-fill text-emerald-400"></i></span>
+    <div id="app-toast-message" class="text-xs sm:text-sm font-medium"></div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- FOOTER (MATCHING FIGMA DESKTOP FOOTER)                                -->
+  <!-- ===================================================================== -->
+  <footer class="bg-slateInk text-surfaceBg mt-auto">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div>
+        <div class="font-serif-display text-xl font-bold text-white">Kuliner Kota Makassar</div>
+        <div id="footer-subtitle" class="text-xs sm:text-[13px] text-slate-400 mt-1">
+          Muhammad Bintang (20232205029) • T.701 Desain Website Kuliner
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 sm:gap-7 text-xs sm:text-[13px] text-slate-300">
+        <button type="button" data-nav="beranda" class="nav-trigger hover:text-white transition">Beranda</button>
+        <button type="button" data-nav="kategori" class="nav-trigger hover:text-white transition">Kategori &amp; Direktori</button>
+        <button type="button" data-nav="detail" class="nav-trigger hover:text-white transition">Detail Kuliner</button>
+        <button type="button" data-nav="peta" class="nav-trigger hover:text-white transition">Peta Interaktif</button>
+        <button type="button" data-nav="artikel" class="nav-trigger hover:text-white transition">Artikel</button>
+        <button type="button" data-nav="tentang" class="nav-trigger hover:text-white transition">Tentang Kami</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- jQuery 3.7.1 CDN -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+  <!-- Leaflet.js 1.9.4 CDN -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Main Application Script (jQuery + Leaflet + JSON) -->
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
