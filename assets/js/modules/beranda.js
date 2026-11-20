@@ -7,6 +7,8 @@
 (function () {
   const $ = window.jQuery;
   const state = window.KulinerDataModule.state;
+  const getBadgeClasses = window.KulinerDataModule.getBadgeClasses;
+  const formatReviewCountShort = window.KulinerDataModule.formatReviewCountShort;
 
   function initMetricCountersAnimation() {
     const $k = $('#metric-count-kuliner');
@@ -169,128 +171,116 @@
 
   function renderBerandaCategoryChips() {
     const $container = $('#beranda-category-chips');
-    if (!$container.length) return;
+    $container.empty();
 
-    let html = '';
     state.data.categories.forEach(function (cat) {
       const isActive = state.beranda.category === cat.id;
-      const activeClass = isActive
-        ? 'bg-makassarRed text-white font-bold border-makassarRed shadow-xs'
-        : 'bg-white text-slate-700 font-medium border-slate-300 hover:border-makassarRed';
+      const btnClasses = isActive
+        ? 'bg-makassarRed text-white font-semibold border-[1.5px] border-makassarRed'
+        : 'bg-white text-slate-700 font-medium border-[1.5px] border-slate-300 hover:border-makassarRed hover:text-makassarRed';
+      const label = `${cat.name} (${cat.count})`;
 
-      html += `
-        <button type="button" data-cat="${cat.id}" class="btn-beranda-cat px-4 py-2 rounded-full text-xs sm:text-[13px] border-[1.5px] shrink-0 inline-flex items-center gap-1.5 ${activeClass}">
-          <span>${cat.name}</span>
-          <span class="text-[11px] opacity-75">(${cat.count})</span>
+      $container.append(`
+        <button type="button" data-beranda-cat="${cat.id}" class="btn-beranda-cat ${btnClasses} text-xs sm:text-[13px] px-3.5 sm:px-4 py-2 rounded-full shrink-0 transition">
+          ${label}
         </button>
-      `;
-    });
-
-    $container.html(html);
-
-    $container.find('.btn-beranda-cat').on('click', function () {
-      state.beranda.category = $(this).data('cat');
-      renderBerandaCategoryChips();
-      renderBerandaCards();
+      `);
     });
   }
 
   function renderBerandaCards() {
     const $grid = $('#beranda-cards-grid');
-    const $info = $('#beranda-result-info');
-    if (!$grid.length) return;
+    $grid.empty();
 
-    const currentCat = state.beranda.category;
-    const keyword = state.beranda.keyword.toLowerCase().trim();
-    const kecamatan = state.beranda.kecamatan;
+    const kw = state.beranda.keyword.trim().toLowerCase();
+    const cat = state.beranda.category;
+    const kec = state.beranda.kecamatan;
 
-    const filtered = state.data.kuliner.filter(function (item) {
-      const matchCat = currentCat === 'all' || item.category === currentCat;
-      const matchKec = kecamatan === 'all' || item.kecamatanId === kecamatan;
-      const matchKeyword =
-        keyword === '' ||
-        item.name.toLowerCase().indexOf(keyword) !== -1 ||
-        item.addressFull.toLowerCase().indexOf(keyword) !== -1 ||
-        item.shortDesc.toLowerCase().indexOf(keyword) !== -1 ||
-        item.keywords.some(function (k) { return k.indexOf(keyword) !== -1; });
+    let items = state.data.kuliner.filter(function (item) {
+      const matchCat = cat === 'all' || item.category === cat;
+      const matchKec = kec === 'all' || item.kecamatanId === kec;
+      const matchKw =
+        !kw ||
+        item.name.toLowerCase().includes(kw) ||
+        item.shortDesc.toLowerCase().includes(kw) ||
+        item.addressShort.toLowerCase().includes(kw) ||
+        item.kecamatanLabel.toLowerCase().includes(kw) ||
+        (item.keywords && item.keywords.some(function (k) { return k.toLowerCase().includes(kw); }));
 
-      return matchCat && matchKec && matchKeyword;
+      return matchCat && matchKec && matchKw;
     });
 
-    if (filtered.length === 0) {
-      $grid.html(`
-        <div class="col-span-full py-12 text-center bg-white border border-slate-200 rounded-xl">
-          <i class="ri-search-eye-line text-4xl text-slate-400 mb-2"></i>
-          <div class="font-serif-display text-lg font-bold text-slateInk">Kuliner Tidak Ditemukan</div>
-          <p class="text-xs text-slate-500 mt-1">Coba kata kunci lain atau pilih kategori "Semua Kuliner".</p>
+    // If no active filter on Beranda, show the 6 featured hero cards matching Figma 01
+    const hasFilter = kw !== '' || cat !== 'all' || kec !== 'all';
+    if (!hasFilter) {
+      const featured = items.filter(function (i) { return i.isFeaturedHero; });
+      items = featured.length >= 6 ? featured.slice(0, 6) : items.slice(0, 6);
+      $('#beranda-result-info').addClass('hidden');
+    } else {
+      $('#beranda-result-info')
+        .removeClass('hidden')
+        .text(`Ditemukan ${items.length} kuliner yang sesuai`);
+    }
+
+    if (items.length === 0) {
+      $grid.append(`
+        <div class="col-span-full bg-white border-[1.5px] border-dashed border-slate-300 rounded-xl p-8 text-center">
+          <div class="text-base font-bold text-slateInk">Kuliner tidak ditemukan untuk pencarian "${state.beranda.keyword}"</div>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Coba kata kunci lain seperti "Coto", "Pallubasa", "Konro", "Pisang Epe", atau reset filter kategori.</p>
+          <button type="button" id="btn-reset-beranda-filter" class="mt-4 bg-makassarRed text-white text-xs font-semibold px-4 py-2 rounded-lg">
+            Tampilkan Semua Kuliner
+          </button>
         </div>
       `);
-      if ($info.length) $info.text('0 Kuliner ditemukan').removeClass('hidden');
       return;
     }
 
-    if ($info.length) {
-      $info.text(`Menampilkan ${filtered.length} Kuliner`).removeClass('hidden');
-    }
+    items.forEach(function (item, idx) {
+      const badgeCls = getBadgeClasses(item.badgeColor);
+      const revShort = formatReviewCountShort(item.reviewCount);
 
-    let html = '';
-    filtered.forEach(function (item, idx) {
-      const badgeColorClass =
-        item.badgeColor === 'orange'
-          ? 'bg-losariOrangeLight text-losariOrange border-losariOrangeBorder'
-          : item.badgeColor === 'green'
-          ? 'bg-halalGreenLight text-halalGreen border-halalGreenBorder'
-          : 'bg-makassarRedLight text-makassarRed border-makassarRedBorder';
-
-      html += `
-        <div class="kuliner-card-animated anim-card-enter bg-white border-[1.5px] border-slate-200 rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-xs group" style="--stagger-idx: ${idx % 6}">
-          <div class="flex flex-col gap-3.5">
-            <div class="wf-media-frame h-48 sm:h-52 w-full">
+      $grid.append(`
+        <article style="--stagger-idx: ${idx}" class="kuliner-card-animated anim-card-enter bg-white border-[1.5px] border-slate-200 hover:border-makassarRed/60 rounded-xl p-4 flex flex-col justify-between gap-3.5 shadow-xs hover:shadow-md transition group">
+          <div class="flex flex-col gap-3">
+            <!-- Media Box -->
+            <div class="wf-media-frame h-44 w-full cursor-pointer btn-open-detail" data-detail-id="${item.id}">
               <img src="${item.images.main}" alt="${item.name}" loading="lazy" />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
-              <span class="absolute top-3 left-3 ${badgeColorClass} px-2.5 py-1 rounded-md text-[11px] font-bold shadow-xs">
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-transparent to-transparent"></div>
+              <span class="absolute top-2.5 left-2.5 ${badgeCls} px-2.5 py-0.5 rounded-md text-[11px] font-bold">
                 ${item.categoryBadge}
               </span>
-              <span class="absolute top-3 right-3 bg-white/90 backdrop-blur text-slateInk px-2.5 py-1 rounded-md text-[11px] font-bold shadow-xs inline-flex items-center gap-1">
-                <i class="ri-star-fill text-losariOrange"></i>
-                <span>${item.rating}</span>
+              <span class="absolute bottom-2.5 right-2.5 bg-losariOrangeLight text-losariOrange border border-losariOrangeBorder px-2.5 py-0.5 rounded-md text-[11px] font-bold inline-flex items-center gap-1">
+                <i class="ri-star-fill"></i>
+                <span>${item.rating} (${revShort})</span>
               </span>
-              <div class="wf-media-caption-overlay absolute bottom-3 left-3 right-3 text-white text-xs font-semibold">
-                ${item.addressShort}
-              </div>
             </div>
 
+            <!-- Title & Description -->
             <div>
-              <div class="text-[11px] font-bold text-makassarRed uppercase tracking-wider">${item.established}</div>
-              <h3 class="font-serif-display text-lg sm:text-xl font-bold text-slateInk group-hover:text-makassarRed transition mt-0.5">
+              <h3 class="font-serif-display text-lg font-bold text-slateInk group-hover:text-makassarRed transition cursor-pointer btn-open-detail" data-detail-id="${item.id}">
                 ${item.name}
               </h3>
-              <p class="text-xs sm:text-[13px] text-slate-600 mt-1.5 line-clamp-2 leading-relaxed">
+              <p class="text-xs sm:text-[13px] text-slate-600 mt-1 line-clamp-2 leading-relaxed">
                 ${item.shortDesc}
               </p>
             </div>
           </div>
 
-          <div class="border-t border-slate-200 pt-4 mt-4 flex items-center justify-between gap-3">
-            <div>
-              <div class="text-[10px] font-bold text-slate-400 uppercase">KABAR HARGA</div>
-              <div class="text-xs sm:text-sm font-bold text-makassarRed">${item.priceText}</div>
+          <div class="flex flex-col gap-2.5 pt-1">
+            <div class="flex items-center justify-between text-xs text-slate-500">
+              <span class="truncate pr-2 inline-flex items-center gap-1"><i class="ri-map-pin-2-fill text-makassarRed shrink-0"></i> <span class="truncate">${item.addressShort}</span></span>
+              <span class="shrink-0 inline-flex items-center gap-1"><i class="ri-time-line text-slate-400"></i> <span>${item.openHours}</span></span>
             </div>
-            <button type="button" data-detail-id="${item.id}" class="btn-open-detail bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs px-3.5 py-2 rounded-lg transition inline-flex items-center gap-1">
-              <span>Lihat Detail</span>
-              <i class="ri-arrow-right-line"></i>
-            </button>
+            <div class="flex items-center justify-between border-t border-slate-200 pt-3">
+              <span class="text-xs sm:text-[13px] font-bold text-makassarRed">Mulai ${item.priceText}/porsi</span>
+              <button type="button" data-detail-id="${item.id}" class="btn-open-detail bg-white hover:bg-makassarRed hover:text-white hover:border-makassarRed text-slateInk border-[1.5px] border-slate-300 font-semibold text-xs px-3.5 py-1.5 rounded-lg transition inline-flex items-center gap-1">
+                <span>Detail</span>
+                <i class="ri-arrow-right-line"></i>
+              </button>
+            </div>
           </div>
-        </div>
-      `;
-    });
-
-    $grid.html(html);
-
-    $grid.find('.btn-open-detail').on('click', function () {
-      const kulinerId = $(this).data('detail-id');
-      window.KulinerDetailModule.renderDetailView(kulinerId);
-      window.KulinerNavModule.navigateToSection('detail');
+        </article>
+      `);
     });
   }
 

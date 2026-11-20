@@ -9,23 +9,22 @@
   const state = window.KulinerDataModule.state;
 
   function openBurgerDrawer() {
-    $('#mobile-burger-drawer-backdrop').removeClass('hidden').hide().fadeIn(200);
-    $('body').addClass('overflow-hidden');
+    $('#mobile-burger-drawer-backdrop').removeClass('hidden');
   }
 
   function closeBurgerDrawer() {
-    $('#mobile-burger-drawer-backdrop').fadeOut(200, function () {
-      $(this).addClass('hidden');
-    });
-    $('body').removeClass('overflow-hidden');
+    $('#mobile-burger-drawer-backdrop').addClass('hidden');
   }
 
-  function navigateToSection(sectionId) {
+  function navigateToSection(sectionId, options) {
+    const opts = options || {};
     state.activeSection = sectionId;
 
+    // Show target section, hide others
     $('.page-section').addClass('hidden');
     $('#section-' + sectionId).removeClass('hidden');
 
+    // Update Desktop Navbar active button
     $('.nav-link-item')
       .removeClass('font-bold text-makassarRed bg-makassarRedLight border-makassarRedBorder')
       .addClass('border-transparent');
@@ -33,6 +32,7 @@
       .addClass('font-bold text-makassarRed bg-makassarRedLight border-makassarRedBorder')
       .removeClass('border-transparent');
 
+    // Update Mobile Burger Drawer active state (Matches Figma M-Drawer)
     $('.drawer-nav-item').each(function () {
       const $btn = $(this);
       const navTarget = $btn.data('nav');
@@ -51,20 +51,39 @@
           .removeClass('border-makassarRed bg-makassarRedLight text-makassarRed font-bold')
           .addClass('border-slate-200 bg-surfaceBg text-slateInk font-semibold');
         if (navTarget === 'beranda')
-          $badge.html('<span>Beranda</span> <i class="ri-arrow-right-line"></i>').removeClass('text-makassarRed').addClass('text-slate-500');
+          $badge
+            .html('<span>Beranda</span> <i class="ri-arrow-right-line"></i>')
+            .removeClass('text-makassarRed')
+            .addClass('text-slate-500');
         if (navTarget === 'kategori')
-          $badge.html('<span>48 Kuliner</span> <i class="ri-arrow-right-line"></i>').removeClass('text-makassarRed').addClass('text-slate-500');
+          $badge
+            .html('<span>48 Kuliner</span> <i class="ri-arrow-right-line"></i>')
+            .removeClass('text-makassarRed')
+            .addClass('text-slate-500');
         if (navTarget === 'detail')
-          $badge.html('<i class="ri-star-fill"></i> <span>4.9</span> <i class="ri-arrow-right-line"></i>').removeClass('text-makassarRed').addClass('text-losariOrange font-bold');
+          $badge
+            .html('<i class="ri-star-fill"></i> <span>4.9</span> <i class="ri-arrow-right-line"></i>')
+            .removeClass('text-makassarRed')
+            .addClass('text-losariOrange font-bold');
         if (navTarget === 'peta')
-          $badge.html('<span>15 Kec.</span> <i class="ri-arrow-right-line"></i>').removeClass('text-makassarRed').addClass('text-slate-500');
+          $badge
+            .html('<span>15 Kec.</span> <i class="ri-arrow-right-line"></i>')
+            .removeClass('text-makassarRed')
+            .addClass('text-slate-500');
         if (navTarget === 'artikel')
-          $badge.html('<span>18 Kisah</span> <i class="ri-arrow-right-line"></i>').removeClass('text-makassarRed').addClass('text-slate-500');
+          $badge
+            .html('<span>18 Kisah</span> <i class="ri-arrow-right-line"></i>')
+            .removeClass('text-makassarRed')
+            .addClass('text-slate-500');
         if (navTarget === 'tentang')
-          $badge.html('<span>Form</span> <i class="ri-arrow-right-line"></i>').removeClass('text-makassarRed').addClass('text-slate-500');
+          $badge
+            .html('<span>Form</span> <i class="ri-arrow-right-line"></i>')
+            .removeClass('text-makassarRed')
+            .addClass('text-slate-500');
       }
     });
 
+    // Mobile context header adjustment (Matches M02, M03, M04, M05, M06 titles)
     const mobileTitleMap = {
       beranda: 'Kuliner Makassar',
       kategori: 'Direktori Kuliner',
@@ -89,21 +108,42 @@
       $('#brand-km-icon').removeClass('hidden');
     }
 
+    // Close mobile drawer if open
     closeBurgerDrawer();
 
-    if (sectionId === 'peta' && state.map.instance) {
-      setTimeout(function () {
+    // Refresh Leaflet maps when their containers become visible
+    if (sectionId === 'peta') {
+      if (state.map.instance) {
         state.map.instance.invalidateSize();
-      }, 150);
-    }
-
-    if (sectionId === 'detail' && state.map.miniMapInstance) {
+      }
       setTimeout(function () {
-        state.map.miniMapInstance.invalidateSize();
+        if (state.map.instance) {
+          state.map.instance.invalidateSize();
+          if (window.KulinerMapModule && window.KulinerMapModule.focusPinOnMap) {
+            window.KulinerMapModule.focusPinOnMap(state.map.activePinId, false);
+          }
+        }
       }, 150);
+    } else if (sectionId === 'detail') {
+      if (window.KulinerDetailModule && window.KulinerDetailModule.updateDetailMiniMap) {
+        window.KulinerDetailModule.updateDetailMiniMap();
+        setTimeout(function () {
+          window.KulinerDetailModule.updateDetailMiniMap();
+        }, 150);
+      }
     }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (opts.focusForm) {
+      setTimeout(function () {
+        const $form = $('#form-rekomendasi-kuliner');
+        if ($form.length) {
+          $('html, body').animate({ scrollTop: $form.offset().top - 100 }, 350);
+          $('#rec-name').trigger('focus');
+        }
+      }, 150);
+    } else if (!opts.skipScrollTop) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   window.KulinerNavModule = {

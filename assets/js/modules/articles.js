@@ -7,63 +7,51 @@
 (function () {
   const $ = window.jQuery;
   const state = window.KulinerDataModule.state;
+  const getBadgeClasses = window.KulinerDataModule.getBadgeClasses;
 
   function renderArticlesGrid() {
     const $grid = $('#articles-cards-grid');
-    const $countLabel = $('#article-count-label');
-    if (!$grid.length) return;
+    $grid.empty();
 
     const topic = state.articles.activeTopic;
-    const filtered = state.data.articles.filter(function (art) {
-      return topic === 'all' || art.topic === topic;
+    const articles = state.data.articles.filter(function (art) {
+      if (topic === 'all') return !art.isFeatured;
+      return art.topic === topic;
     });
 
-    if ($countLabel.length) {
-      $countLabel.text(`Menampilkan ${filtered.length} Artikel`);
-    }
+    $('#article-count-label').text(`Menampilkan ${articles.length} Artikel Pilihan`);
 
-    let html = '';
-    filtered.forEach(function (art, idx) {
-      html += `
-        <div class="kuliner-card-animated anim-card-enter bg-white border-[1.5px] border-slate-200 rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-xs group" style="--stagger-idx: ${idx % 6}">
-          <div class="flex flex-col gap-3.5">
-            <div class="wf-media-frame h-48 sm:h-52 w-full">
+    articles.forEach(function (art, idx) {
+      const badgeCls = getBadgeClasses(art.badgeColor);
+
+      $grid.append(`
+        <article style="--stagger-idx: ${idx}" class="kuliner-card-animated anim-card-enter bg-white border-[1.5px] border-slate-200 hover:border-makassarRed/60 rounded-xl p-4 sm:p-5 flex flex-col justify-between gap-3.5 shadow-xs hover:shadow-md transition group">
+          <div class="flex flex-col gap-3">
+            <div class="wf-media-frame h-44 w-full cursor-pointer btn-read-article" data-article-id="${art.id}">
               <img src="${art.image}" alt="${art.title}" loading="lazy" />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
-              <span class="absolute top-3 left-3 bg-makassarRedLight text-makassarRed border border-makassarRedBorder px-2.5 py-1 rounded-md text-[11px] font-bold shadow-xs">
+              <div class="absolute inset-0 bg-gradient-to-t from-slate-950/65 via-transparent to-transparent"></div>
+              <span class="absolute top-2.5 left-2.5 ${badgeCls} px-2.5 py-0.5 rounded-md text-[11px] font-bold">
                 ${art.badgeText}
               </span>
-              <div class="wf-media-caption-overlay absolute bottom-3 left-3 right-3 text-white text-xs font-semibold">
-                ${art.readTime}
-              </div>
             </div>
 
-            <div>
-              <h3 class="font-serif-display text-lg sm:text-xl font-bold text-slateInk group-hover:text-makassarRed transition leading-snug">
-                ${art.title}
-              </h3>
-              <p class="text-xs sm:text-[13px] text-slate-600 mt-2 line-clamp-3 leading-relaxed">
-                ${art.excerpt}
-              </p>
-            </div>
+            <h3 class="font-serif-display text-lg font-bold text-slateInk group-hover:text-makassarRed transition leading-snug cursor-pointer btn-read-article" data-article-id="${art.id}">
+              ${art.title}
+            </h3>
+            <p class="text-xs sm:text-[13px] text-slate-600 leading-relaxed">
+              ${art.excerpt}
+            </p>
           </div>
 
-          <div class="border-t border-slate-200 pt-4 mt-4 flex items-center justify-between gap-3">
-            <span class="text-xs text-slate-500 font-medium">${art.publishedDate}</span>
-            <button type="button" data-article-id="${art.id}" class="btn-read-article bg-makassarRed hover:bg-makassarRedHover text-white font-semibold text-xs px-4 py-2 rounded-lg transition inline-flex items-center gap-1.5">
-              <span>Baca Artikel</span>
+          <div class="flex items-center justify-between border-t border-slate-200 pt-3">
+            <span class="text-[11px] text-slate-500 inline-flex items-center gap-1"><i class="ri-time-line"></i> <span>${art.readTime}</span></span>
+            <button type="button" data-article-id="${art.id}" class="btn-read-article text-xs sm:text-[13px] font-bold text-makassarRed hover:underline inline-flex items-center gap-1">
+              <span>Baca Selengkapnya</span>
               <i class="ri-arrow-right-line"></i>
             </button>
           </div>
-        </div>
-      `;
-    });
-
-    $grid.html(html);
-
-    $grid.find('.btn-read-article').on('click', function () {
-      const artId = $(this).data('article-id');
-      openArticleModal(artId);
+        </article>
+      `);
     });
   }
 
@@ -72,36 +60,26 @@
     if (!art) return;
 
     state.articles.modalArticleId = art.id;
-
     $('#modal-article-badge').text(art.badgeText);
     $('#modal-article-img').attr('src', art.image).attr('alt', art.title);
-    $('#modal-article-meta').text(`Ditulis oleh ${art.author} • ${art.publishedDate} • ${art.readTime}`);
+    $('#modal-article-meta').text(`${art.publishedDate} • Oleh ${art.author} • ${art.readTime}`);
     $('#modal-article-title').text(art.title);
 
-    let bodyHtml = '';
-    art.content.forEach(function (paragraph) {
-      bodyHtml += `<p>${paragraph}</p>`;
+    const $body = $('#modal-article-body');
+    $body.empty();
+    (art.content || []).forEach(function (paragraph) {
+      $body.append(`<p>${paragraph}</p>`);
     });
-    $('#modal-article-body').html(bodyHtml);
 
     $('#btn-modal-article-kuliner')
-      .text(art.relatedLabel)
-      .off('click')
-      .on('click', function () {
-        closeArticleModal();
-        window.KulinerDetailModule.renderDetailView(art.relatedKulinerId);
-        window.KulinerNavModule.navigateToSection('detail');
-      });
+      .data('detail-id', art.relatedKulinerId)
+      .html(`<span>${art.relatedLabel}</span> <i class="ri-arrow-right-line"></i>`);
 
-    $('#modal-article-reader').removeClass('hidden').hide().fadeIn(200);
-    $('body').addClass('overflow-hidden');
+    $('#modal-article-reader').removeClass('hidden');
   }
 
   function closeArticleModal() {
-    $('#modal-article-reader').fadeOut(200, function () {
-      $(this).addClass('hidden');
-    });
-    $('body').removeClass('overflow-hidden');
+    $('#modal-article-reader').addClass('hidden');
   }
 
   window.KulinerArticlesModule = {
