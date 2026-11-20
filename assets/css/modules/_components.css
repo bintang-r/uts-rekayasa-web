@@ -1,0 +1,126 @@
+/* ==========================================================================
+   MODULE: UI Components (Cards, Frames, Buttons, Badges)
+   ========================================================================== */
+
+/* Figma Image Frame Aesthetic with Real Photos */
+.wf-media-frame {
+  position: relative;
+  background-color: #E2E8F0;
+  border: 1.5px dashed #94A3B8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.wf-media-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.group:hover .wf-media-frame img {
+  transform: scale(1.05);
+}
+
+/* Wireframe Inspection Mode */
+body.wireframe-mode .wf-media-frame img {
+  opacity: 0.14;
+  filter: grayscale(100%);
+}
+
+body.wireframe-mode .wf-media-caption-overlay {
+  background: rgba(226, 232, 240, 0.78);
+  color: #334155;
+}
+
+/* Culinary Card Animated & Hover Effect */
+.kuliner-card-animated {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease;
+}
+
+.kuliner-card-animated::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3.5px;
+  width: 0%;
+  background: linear-gradient(90deg, #B91C1C 0%, #EA580C 60%, #15803D 100%);
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 20;
+}
+
+.kuliner-card-animated:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 20px 32px -10px rgba(15, 23, 42, 0.12),
+    0 8px 18px -6px rgba(185, 28, 28, 0.14);
+  border-color: rgba(185, 28, 28, 0.55);
+}
+
+.kuliner-card-animated:hover::before {
+  width: 100%;
+}
+
+/* Light Shimmer Sweep across Image Frame on Card Hover */
+.wf-media-frame::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.26) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-20deg);
+  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.kuliner-card-animated:hover .wf-media-frame::after {
+  left: 140%;
+}
+
+/* Buttons & Chips Micro-Interactions */
+.btn-animated,
+.btn-beranda-cat,
+.btn-dir-category,
+.btn-map-chip,
+.btn-article-topic,
+.btn-price-filter,
+.btn-open-detail,
+.nav-link-item {
+  transition:
+    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.22s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.btn-animated:hover,
+.btn-beranda-cat:hover,
+.btn-map-chip:hover,
+.btn-article-topic:hover,
+.btn-open-detail:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px -3px rgba(185, 28, 28, 0.18);
+}
+
+.btn-animated:active,
+.btn-beranda-cat:active,
+.btn-dir-category:active,
+.btn-map-chip:active,
+.btn-article-topic:active,
+.btn-open-detail:active {
+  transform: translateY(0) scale(0.96);
+}

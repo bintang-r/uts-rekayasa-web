@@ -1,0 +1,14 @@
+/* ==========================================================================
+   MODULE: Navigation & Mobile Burger Drawer
+   ========================================================================== */
+header.sticky {
+  backdrop-filter: blur(8px);
+}
+
+.drawer-nav-item {
+  transition: all 0.2s ease;
+}
+
+#mobile-burger-drawer-backdrop {
+  transition: opacity 0.25s ease;
+}

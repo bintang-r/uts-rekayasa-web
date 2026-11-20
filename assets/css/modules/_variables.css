@@ -1,0 +1,17 @@
+/* ==========================================================================
+   MODULE: CSS Variables & Design Tokens
+   ========================================================================== */
+:root {
+  --makassar-red: #B91C1C;
+  --makassar-red-light: #FEF2F2;
+  --makassar-red-border: #FECACA;
+  --losari-orange: #EA580C;
+  --losari-orange-light: #FFF7ED;
+  --losari-orange-border: #FED7AA;
+  --halal-green: #15803D;
+  --halal-green-light: #F0FDF4;
+  --halal-green-border: #BBF7D0;
+  --slate-ink: #0F172A;
+  --surface-bg: #F8FAFC;
+  --wireframe-gray: #E2E8F0;
+}
